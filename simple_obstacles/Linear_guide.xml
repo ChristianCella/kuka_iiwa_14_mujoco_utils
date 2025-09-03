@@ -1,0 +1,27 @@
+<mujoco model="Linear_guide">
+  <compiler angle="radian"/>
+  <option timestep="0.01"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="120" elevation="-20"/>
+  </visual>
+
+  <asset>
+    <mesh name="guide_mesh" file="Linear_guide.obj"/> 
+  </asset>
+
+  <worldbody>
+    <body name="obstacle_body" pos="0 0 0">
+      <inertial mass="624" pos="0 0 0.05" diaginertia="208.52 8.84 216.32"/>
+      <geom type="mesh" mesh="guide_mesh" rgba="0.2 0.2 0.2 1" contype="0" conaffinity="0" group="0"/>
+      <!-- collision cylinder -->
+      <geom name="base_plate_guide" type="box" size="0.2 1 0.05" pos="0 0 0.05" rgba="0.8 0.2 0.2 1" contype="1" conaffinity="1" group="3"/>
+      <!-- Marker (red sphere) to specify the origin -->
+      <site name="mount_site_guide" pos="0 0 0" size="0.005" rgba="1 0 0 1"/>
+      <!-- Marker (green sphere) to specify the point of application of the weight -->
+      <geom type="sphere" size="0.005" pos="0 0 0.05" rgba="0 1 0 1" contype="0" conaffinity="0" group="2"/>
+    </body>
+  </worldbody>
+</mujoco>

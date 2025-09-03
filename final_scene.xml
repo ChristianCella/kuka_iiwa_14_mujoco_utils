@@ -1,37 +1,19 @@
-<mujoco model="iiwa14">
-  <compiler angle="radian" meshdir="assets" autolimits="true"/>
+<mujoco model="ur5e scene">
+  <compiler angle="radian" meshdir="kuka/assets" autolimits="true"/>
 
-  <option integrator="implicitfast"/>
+  <statistic center="0.3 0 0.4" extent="0.8"/>
 
-  <default>
-    <default class="iiwa">
-      <material specular="0.5" shininess="0.25"/>
-      <joint axis="0 0 1"/>
-      <general gaintype="fixed" biastype="affine" gainprm="2000" biasprm="0 -2000 -200"/>
-      <default class="joint1">
-        <joint range="-2.96706 2.96706"/>
-        <general ctrlrange="-2.96706 2.96706"/>
-        <default class="joint2">
-          <joint range="-2.0944 2.0944"/>
-          <general ctrlrange="-2.0944 2.0944"/>
-        </default>
-      </default>
-      <default class="joint3">
-        <joint range="-3.05433 3.05433"/>
-        <general ctrlrange="-3.05433 3.05433"/>
-      </default>
-      <default class="visual">
-        <geom type="mesh" contype="0" conaffinity="0" group="2" material="gray"/>
-      </default>
-      <default class="collision">
-        <geom group="3"/>
-      </default>
-      <site size="0.001" rgba="1 0 0 1" group="4"/>
-    </default>
-  </default>
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="120" elevation="-20"/>
+  </visual>
 
   <asset>
-    <material class="iiwa" name="gray" rgba="0.4 0.4 0.4 1"/>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+  <material class="iiwa" name="gray" rgba="0.4 0.4 0.4 1"/>
     <material class="iiwa" name="light_gray" rgba="0.6 0.6 0.6 1"/>
     <material class="iiwa" name="black" rgba="0 0 0 1"/>
     <material class="iiwa" name="orange" rgba="1 0.423529 0.0392157 1"/>
@@ -49,10 +31,22 @@
     <mesh file="link_6_orange.obj"/>
     <mesh file="link_6_grey.obj"/>
     <mesh file="link_7.obj"/>
+  <mesh name="tool_mesh" file="driller.obj"/> 
+  <mesh name="aluminium_plate_mesh" file="aluminium_plate.obj"/> 
+  <mesh name="guide_mesh" file="Linear_guide.obj"/> 
   </asset>
 
   <worldbody>
-    <light name="top" pos="0 0 2" mode="trackcom"/>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+    <!-- Definition of the world frame -->
+    <body name="world_frame" pos="0.0 0.0 0.0">
+        <geom name="world_x_axis" type="capsule" fromto="0 0 0 0.15 0 0" size="0.01" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+        <geom name="world_y_axis" type="capsule" fromto="0 0 0 0 0.15 0" size="0.01" rgba="0 1 0 1" contype="0" conaffinity="0"/>
+        <geom name="world_z_axis" type="capsule" fromto="0 0 0 0 0 0.15" size="0.01" rgba="0 0 1 1" contype="0" conaffinity="0"/>
+    </body>
+
+  <light name="top" pos="0 0 2" mode="trackcom"/>
     <body name="base" childclass="iiwa">
       <inertial mass="5" pos="-0.1 0 0.07" diaginertia="0.05 0.06 0.03"/>
       <geom class="visual" mesh="link_0"/>
@@ -159,7 +153,17 @@
                         <geom type="capsule" fromto="0 0 0 0 0.06 0" rgba="0 1 0 1" size="0.003" contype="0" conaffinity="0"/>
                         <geom type="capsule" fromto="0 0 0 0 0 0.06" rgba="0 0 1 1" size="0.003" contype="0" conaffinity="0"/>
                     </body>
-                  </body>
+                  <body name="tool_top" pos="0 0 0">
+      <inertial mass="3.75" pos="0 0 0.1" diaginertia="0.021 0.021 0.003"/>
+      <geom type="mesh" mesh="tool_mesh" rgba="0.2 0.2 0.2 1" contype="0" conaffinity="0" group="0"/>
+      <!-- collision cylinder -->
+      <geom name="driller" type="cylinder" size="0.035 0.125" pos="0 0 0.125" rgba="0.2 0.8 0.2 1" contype="1" conaffinity="1" group="3"/>
+      <!-- Marker (red sphere) to specify the origin -->
+      <site name="mount_site" pos="0 0 0" size="0.005" rgba="1 0 0 1"/>
+      <!-- Marker (green sphere) to specify the point of application of the weight -->
+      <geom type="sphere" size="0.005" pos="0 0 0.1" rgba="0 1 0 1" contype="0" conaffinity="0" group="2"/>
+    </body>
+  </body>
                   </body>
                 </body>
               </body>
@@ -168,19 +172,96 @@
         </body>
       </body>
     </body>
+  <body name="aluminium_plate" pos="0 0 0">
+
+      <geom type="mesh" mesh="aluminium_plate_mesh" rgba="0.45 0.45 0.45 1" contype="0" conaffinity="0" group="0"/>
+      <!-- Base plate -->
+      <geom name="base_plate" type="box" size="0.4 0.75 0.025" pos="0 0 0.025" rgba="0.8 0.2 0.2 1" contype="1" conaffinity="1" group="3"/>
+
+      <!-- right top cube -->
+      <geom name="right_top_cube" type="box" size="0.0755 0.485 0.025" pos="-0.226 0.141 0.075" rgba="0.2 0.8 0.2 1" contype="1" conaffinity="1" group="3"/>
+
+      <!-- right middle cube -->
+      <geom name="right_middle_cube" type="box" size="0.1205 0.2835 0.025" pos="-0.03 0.202 0.075" rgba="0.2 0.8 0.2 1" contype="1" conaffinity="1" group="3"/>
+
+      <!-- right bottom cube -->
+      <geom name="right_bottom_cube" type="box" size="0.051 0.2835 0.025" pos="0.141 0.202 0.075" rgba="0.2 0.8 0.2 1" contype="1" conaffinity="1" group="3"/>
+
+      <!-- lower bottom cube -->
+      <geom name="lower_bottom_cube" type="box" size="0.0295 0.285 0.025" pos="0.284 -0.367 0.075" rgba="0.2 0.8 0.2 1" contype="1" conaffinity="1" group="3"/>
+
+      <!-- lower top cube -->
+      <geom name="lower_top_cube" type="box" size="0.0705 0.0295 0.025" pos="0.184 -0.622 0.075" rgba="0.2 0.8 0.2 1" contype="1" conaffinity="1" group="3"/>
+
+      <!-- left cylinder -->
+      <geom name="left_cylinder" type="cylinder" size="0.05 0.01" pos="0 -0.373 0.06" rgba="0.2 0.8 0.2 1" contype="1" conaffinity="1" group="3"/>
+
+      <!-- right cylinder -->
+      <geom name="right_cylinder" type="cylinder" size="0.05 0.01" pos="0.317 0.583 0.06" rgba="0.2 0.8 0.2 1" contype="1" conaffinity="1" group="3"/>
+
+
+      <!-- Definition of the sites -->
+      <!-- center of the piece -->
+      <site name="mount_plate_site" pos="0.0 0.0 0.0" size="0.005" rgba="1 0 0 1"/>
+
+      <!-- Hole 1 -->
+      <body name="hole_1_frame_body" pos="0 -0.373 0.07" quat="0 1 0 0">
+        <geom type="capsule" fromto="0 0 0 0.08 0 0" rgba="1 0 0 1" size="0.003" contype="0" conaffinity="0"/>
+        <geom type="capsule" fromto="0 0 0 0 0.08 0" rgba="0 1 0 1" size="0.003" contype="0" conaffinity="0"/>
+        <geom type="capsule" fromto="0 0 0 0 0 0.08" rgba="0 0 1 1" size="0.003" contype="0" conaffinity="0"/>
+      </body>
+
+      <!-- Hole 2 -->
+      <body name="hole_2_frame_body" pos="0.317 0.583 0.07" quat="0 1 0 0">
+        <geom type="capsule" fromto="0 0 0 0.08 0 0" rgba="1 0 0 1" size="0.003" contype="0" conaffinity="0"/>
+        <geom type="capsule" fromto="0 0 0 0 0.08 0" rgba="0 1 0 1" size="0.003" contype="0" conaffinity="0"/>
+        <geom type="capsule" fromto="0 0 0 0 0 0.08" rgba="0 0 1 1" size="0.003" contype="0" conaffinity="0"/>
+      </body>
+
+
+    </body>   
+  <body name="obstacle_body" pos="0 0 0">
+      <inertial mass="624" pos="0 0 0.05" diaginertia="208.52 8.84 216.32"/>
+      <geom type="mesh" mesh="guide_mesh" rgba="0.2 0.2 0.2 1" contype="0" conaffinity="0" group="0"/>
+      <!-- collision cylinder -->
+      <geom name="base_plate_guide" type="box" size="0.2 1 0.05" pos="0 0 0.05" rgba="0.8 0.2 0.2 1" contype="1" conaffinity="1" group="3"/>
+      <!-- Marker (red sphere) to specify the origin -->
+      <site name="mount_site_guide" pos="0 0 0" size="0.005" rgba="1 0 0 1"/>
+      <!-- Marker (green sphere) to specify the point of application of the weight -->
+      <geom type="sphere" size="0.005" pos="0 0 0.05" rgba="0 1 0 1" contype="0" conaffinity="0" group="2"/>
+    </body>
   </worldbody>
 
-  <actuator>
-    <motor joint="joint1" gear="1"/>
+<default><default class="iiwa">
+      <material specular="0.5" shininess="0.25"/>
+      <joint axis="0 0 1"/>
+      <general gaintype="fixed" biastype="affine" gainprm="2000" biasprm="0 -2000 -200"/>
+      <default class="joint1">
+        <joint range="-2.96706 2.96706"/>
+        <general ctrlrange="-2.96706 2.96706"/>
+        <default class="joint2">
+          <joint range="-2.0944 2.0944"/>
+          <general ctrlrange="-2.0944 2.0944"/>
+        </default>
+      </default>
+      <default class="joint3">
+        <joint range="-3.05433 3.05433"/>
+        <general ctrlrange="-3.05433 3.05433"/>
+      </default>
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" material="gray"/>
+      </default>
+      <default class="collision">
+        <geom group="3"/>
+      </default>
+      <site size="0.001" rgba="1 0 0 1" group="4"/>
+    </default>
+  <geom condim="3" friction="1 0.5 0.01" solref="0.02 1" solimp="0.9 0.95 0.001"/>
+  </default><actuator><motor joint="joint1" gear="1"/>
     <motor joint="joint2" gear="1"/>
     <motor joint="joint3" gear="1"/>
     <motor joint="joint4" gear="1"/>
     <motor joint="joint5" gear="1"/>
     <motor joint="joint6" gear="1"/>
     <motor joint="joint7" gear="1"/>
-  </actuator>
-
-  <keyframe>
-    <key name="home" qpos="0 0.785398 0 -1.5708 0 0 0" ctrl="0 0.785398 0 -1.5708 0 0 0"/>
-  </keyframe>
-</mujoco>
+  </actuator></mujoco>
