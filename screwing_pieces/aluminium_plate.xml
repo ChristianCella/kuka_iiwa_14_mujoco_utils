@@ -57,11 +57,11 @@
       </body>
 
       <!-- Hole 2 -->
-      <!-- <body name="hole_2_frame_body" pos="0.317 0.583 0.07" quat="0 1 0 0">
+      <body name="hole_2_frame_body" pos="0.317 0.583 0.07" quat="0 1 0 0">
         <geom type="capsule" fromto="0 0 0 0.08 0 0" rgba="1 0 0 1" size="0.003" contype="0" conaffinity="0"/>
         <geom type="capsule" fromto="0 0 0 0 0.08 0" rgba="0 1 0 1" size="0.003" contype="0" conaffinity="0"/>
         <geom type="capsule" fromto="0 0 0 0 0 0.08" rgba="0 0 1 1" size="0.003" contype="0" conaffinity="0"/>
-      </body> -->
+      </body>
 
     </body>   
   </worldbody>
